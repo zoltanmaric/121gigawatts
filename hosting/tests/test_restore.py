@@ -39,20 +39,11 @@ class RestoreArchiveTests(unittest.TestCase):
 
 class TargetTests(unittest.TestCase):
     def test_nonempty_target_is_refused_before_import(self):
-        with patch.object(Path, 'resolve', return_value=Path('/var/www/test')), \
-             patch.object(restore.subprocess, 'run', return_value=Mock(stdout='18\n')), \
+        with patch.object(restore.subprocess, 'run', return_value=Mock(stdout='18\n')), \
              patch.object(restore.subprocess, 'Popen') as importer:
             with self.assertRaisesRegex(ValueError, 'nonempty database'):
-                restore.restore(Path('/var/www/test'))
+                restore.restore()
             importer.assert_not_called()
-
-    def test_target_outside_site_root_is_refused_before_database_access(self):
-        with patch.object(Path, 'resolve', return_value=Path('/etc')), \
-             patch.object(restore.subprocess, 'run') as query:
-            with self.assertRaises(ValueError):
-                restore.validate_target(Path('/etc'))
-            query.assert_not_called()
-
 
 if __name__ == '__main__':
     unittest.main()

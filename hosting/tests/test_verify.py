@@ -39,8 +39,19 @@ class VerifyTests(unittest.TestCase):
                 raise OSError('Not found')
             return Response(url, b'<html></html>')
         with patch.object(verify, 'urlopen', side_effect=fetch):
-            self.assertEqual(len(verify.verify(BASE)['failures']), 1)
+            self.assertTrue(verify.verify(BASE)['failures'])
 
     def test_redirect_to_live_site_is_not_a_successful_preview_check(self):
         with patch.object(verify, 'urlopen', side_effect=lambda *a, **k: Response('https://example.org/', b'')):
             self.assertTrue(verify.verify(BASE)['failures'])
+
+    def test_html_fallback_cannot_pass_as_a_sitemap(self):
+        with patch.object(verify, 'urlopen', side_effect=lambda *a, **k: Response(BASE, b'<html><body>Home</body></html>')):
+            self.assertTrue(verify.verify(BASE)['failures'])
+
+    def test_empty_or_invalid_locations_fail(self):
+        for body in [b'<urlset/>', b'<sitemapindex/>', b'<urlset><url/></urlset>',
+                     b'<urlset><url><loc> </loc></url></urlset>',
+                     b'<urlset><url><loc>/relative/</loc></url></urlset>']:
+            with self.subTest(body=body), patch.object(verify, 'urlopen', side_effect=lambda url, **k: Response(url, body)):
+                self.assertTrue(verify.verify(BASE)['failures'])

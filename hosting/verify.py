@@ -34,7 +34,7 @@ def verify(base):
         raise ValueError('Expected an HTTP or HTTPS preview URL')
     sitemap_queue = [urljoin(base, 'sitemap.xml')]
     visited = set()
-    pages = {base}
+    pages = set()
     assets = set()
     failures = []
 
@@ -51,17 +51,24 @@ def verify(base):
         visited.add(url)
         try:
             tree = ET.fromstring(read(url))
-            selector = './{*}sitemap/{*}loc' if tree.tag.endswith('sitemapindex') else './{*}url/{*}loc'
-            links = [node.text for node in tree.findall(selector)]
+            namespace = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
+            if tree.tag not in ('sitemapindex', 'urlset', namespace + 'sitemapindex', namespace + 'urlset'):
+                raise ValueError('Expected sitemapindex or urlset, not ' + tree.tag)
+            index = tree.tag in ('sitemapindex', namespace + 'sitemapindex')
+            entries = tree.findall('./{*}sitemap' if index else './{*}url')
+            links = [(entry.findtext('{*}loc') or '').strip() for entry in entries]
             for link in links:
-                if urlsplit(link).netloc != origin:
+                if urlsplit(link).scheme not in ('http', 'https') or urlsplit(link).netloc != origin:
                     raise ValueError('Sitemap points outside the preview: ' + link)
-            if tree.tag.endswith('sitemapindex'):
+            if index:
                 sitemap_queue.extend(links)
             else:
                 pages.update(links)
         except Exception as error:
             failures.append({'url': url, 'error': str(error)})
+    if not pages:
+        failures.append({'url': base, 'error': 'No pages found in sitemaps'})
+    pages.add(base)
     for url in sorted(pages):
         try:
             parser = Assets()
