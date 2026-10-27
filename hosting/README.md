@@ -91,14 +91,23 @@ manage subsequent key changes on the server. Back up the private state.
 
 ## Configure
 
+For a fresh restore target, install with Ghost held stopped so its database stays
+empty:
+
+```sh
+make -C hosting configure HOLD=1
+```
+
+Omit `HOLD=1` only to start a new empty site. On an already configured server,
+predict changes before applying them:
+
 ```sh
 make -C hosting check
 make -C hosting configure
 ```
 
-`check` predicts changes; `configure` can restart services. For a fresh server
-that will receive a restore, use `make -C hosting configure HOLD=1` to leave
-Ghost stopped and its database empty. Otherwise it starts an empty site.
+`configure` can restart services. Ansible check mode needs existing packages and
+files; it is not a first-installation test.
 
 The playbook installs or reconciles the pinned Ghost version; it refuses an
 implicit version upgrade. Node 22 patch updates follow the package repository.
