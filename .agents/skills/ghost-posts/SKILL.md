@@ -1,6 +1,6 @@
 ---
 name: ghost-posts
-description: Updates Ghost posts programmatically through the Admin API, including text, links, images, and iframe destinations. Use for content edits rather than theme or server changes.
+description: Previews and updates Ghost posts through the Admin API, including text, links, images, and iframe destinations. Use for content edits rather than theme or server changes.
 ---
 
 # Ghost posts
@@ -53,11 +53,30 @@ See Ghost's [authentication methods](https://docs.ghost.org/admin-api#authentica
   Preserve the editor structure instead of regenerating the post from rendered
   HTML with `source=html`, which can lose card structure.
 
-## Save
+## Preview and approval
 
-When the requested edit is authorized, use
-`PUT /ghost/api/admin/posts/{id}/?save_revision=true`. Send only the fields being
-changed plus the fetched `updated_at`. For a body edit:
+Provide Ghost's own shareable preview URL before applying a live change:
+
+- For an unpublished draft, save the proposed content with `status: "draft"`.
+- For a published or scheduled post, create a temporary draft with the proposed
+  content. Copy the writable fields that affect rendering: title, editor content,
+  feature image/alt/caption, authors, tags, excerpt, template, visibility, post
+  code injection, and publication date where present. Omit the original ID,
+  UUID and slug; set `status: "draft"` and do not send email options. Leave the
+  original post untouched; never unpublish it to obtain a preview.
+- Read the saved draft's UUID and provide `<site-url>/p/<uuid>/`. Open it once
+  to check that it renders the proposed change. A published post's `/p/` URL
+  redirects to its live page and is not a preview of pending changes.
+- Return that link and a short description of the change, then wait for explicit
+  approval. Keep draft content and preview URLs out of this public repository.
+
+## Apply the approved change
+
+After approval, re-fetch the original and check for concurrent edits against the
+saved snapshot. If the proposed change needs revision, refresh the preview and
+obtain approval again. Update the original post, not the temporary preview copy,
+with `PUT /ghost/api/admin/posts/{id}/?save_revision=true`. Send only the fields
+being changed plus its latest checked `updated_at`. For a body edit:
 
 ```javascript
 const body = {
@@ -81,7 +100,9 @@ read the post before retrying so a successful edit is not repeated.
 
 Re-fetch the post and confirm the intended editor-content change and preserved
 metadata. Check the public page and affected link, image, or embed in a browser;
-an HTTP 200 alone does not verify an interactive embed. Report what changed.
+an HTTP 200 alone does not verify an interactive embed. After a successful
+update, remove only the temporary preview draft created for this edit. Report
+what changed.
 To undo an authorized edit, restore the affected fields from the saved snapshot
 using the latest `updated_at`, preserving any subsequent unrelated edits.
 
