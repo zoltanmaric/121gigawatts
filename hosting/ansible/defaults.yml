@@ -1,0 +1,6 @@
+---
+ghost_version: 6.72.0
+ghost_cli_version: 1.34.0
+site_path: /var/www/121gigawatts
+service_name: ghost_121gigawatts-org
+certificate_dir: /etc/ssl/121gigawatts

@@ -1,0 +1,8 @@
+server_name  = "ghost-temporary"
+location     = "hel1"
+server_type  = "cpx02"
+ssh_key_name = "your-existing-key"
+ip_names = {
+  ipv4 = "ghost-temporary-v4"
+  ipv6 = "ghost-temporary-v6"
+}

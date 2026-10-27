@@ -1,0 +1,20 @@
+[Unit]
+Description=Ghost - 121 Gigawatts temporary migration server
+After=network.target mysql.service
+Requires=mysql.service
+
+[Service]
+Type=simple
+User=ghost
+Group=ghost
+WorkingDirectory={{ site_path }}
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node {{ site_path }}/current/index.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
