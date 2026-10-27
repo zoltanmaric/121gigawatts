@@ -7,9 +7,9 @@ Requires=mysql.service
 Type=simple
 User=ghost
 Group=ghost
-WorkingDirectory={{ site_path }}
+WorkingDirectory=/var/www/121gigawatts
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/node {{ site_path }}/current/index.js
+ExecStart=/usr/bin/node /var/www/121gigawatts/current/index.js
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=30

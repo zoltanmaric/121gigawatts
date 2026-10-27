@@ -11,19 +11,16 @@
           - ansible_facts.distribution == 'Ubuntu'
           - ansible_facts.distribution_version == '24.04'
           - domain is match('^[a-z0-9][a-z0-9.-]+[a-z0-9]$')
-          - site_path is match('^/var/www/[a-zA-Z0-9_-]+$')
-          - service_name is match('^[a-zA-Z0-9_-]+$')
-          - certificate_dir is match('^/etc/ssl/[a-zA-Z0-9_-]+$')
     - name: Validate private inputs
       ansible.builtin.import_tasks: config.yml
     - name: Check existing origin certificate when not supplying one
       ansible.builtin.stat:
-        path: "{{ certificate_dir }}/origin.crt"
+        path: "/etc/ssl/121gigawatts/origin.crt"
       register: existing_certificate
       when: origin_certificate_file is not defined
     - name: Check existing private key when not supplying one
       ansible.builtin.stat:
-        path: "{{ certificate_dir }}/origin.key"
+        path: "/etc/ssl/121gigawatts/origin.key"
       register: existing_key
       when: origin_key_file is not defined
     - name: Require supplied or existing TLS files
@@ -115,18 +112,18 @@
         shell: /usr/sbin/nologin
     - name: Create the installation directory
       ansible.builtin.file:
-        path: "{{ site_path }}"
+        path: "/var/www/121gigawatts"
         state: directory
         owner: ghostuser
         group: ghostuser
         mode: '0775'
     - name: Inspect installed Ghost version
       ansible.builtin.stat:
-        path: "{{ site_path }}/current/package.json"
+        path: "/var/www/121gigawatts/current/package.json"
       register: installed_ghost
     - name: Read installed Ghost version
       ansible.builtin.slurp:
-        src: "{{ site_path }}/current/package.json"
+        src: "/var/www/121gigawatts/current/package.json"
       register: installed_package
       when: installed_ghost.stat.exists
     - name: Refuse an implicit Ghost version upgrade
@@ -137,8 +134,8 @@
     - name: Install Ghost on an empty server
       ansible.builtin.command:
         argv: [runuser, -u, ghostuser, --, ghost, install, "{{ ghost_version }}", --no-setup, --no-start, --no-prompt, --no-check-mem]
-        chdir: "{{ site_path }}"
-        creates: "{{ site_path }}/current/package.json"
+        chdir: "/var/www/121gigawatts"
+        creates: "/var/www/121gigawatts/current/package.json"
       environment:
         HOME: /home/ghostuser
     - name: Start MySQL
@@ -179,7 +176,7 @@
     - name: Install private Ghost configuration
       ansible.builtin.copy:
         src: "{{ ghost_config_file }}"
-        dest: "{{ site_path }}/config.production.json"
+        dest: "/var/www/121gigawatts/config.production.json"
         owner: ghostuser
         group: ghost
         mode: '0640'
@@ -188,7 +185,7 @@
       notify: Restart ghost
     - name: Give the runtime ownership of content only
       ansible.builtin.file:
-        path: "{{ site_path }}/content"
+        path: "/var/www/121gigawatts/content"
         state: directory
         owner: ghost
         group: ghost
@@ -196,25 +193,25 @@
     - name: Install Ghost service
       ansible.builtin.template:
         src: templates/ghost.service.j2
-        dest: "/etc/systemd/system/{{ service_name }}.service"
+        dest: "/etc/systemd/system/ghost_121gigawatts-org.service"
         mode: '0644'
       notify: Restart ghost
     - name: Create certificate directory
       ansible.builtin.file:
-        path: "{{ certificate_dir }}"
+        path: "/etc/ssl/121gigawatts"
         state: directory
         mode: '0700'
     - name: Install origin certificate
       ansible.builtin.copy:
         src: "{{ origin_certificate_file }}"
-        dest: "{{ certificate_dir }}/origin.crt"
+        dest: "/etc/ssl/121gigawatts/origin.crt"
         mode: '0644'
       when: origin_certificate_file is defined
       notify: Reload nginx
     - name: Install origin private key
       ansible.builtin.copy:
         src: "{{ origin_key_file }}"
-        dest: "{{ certificate_dir }}/origin.key"
+        dest: "/etc/ssl/121gigawatts/origin.key"
         mode: '0600'
       no_log: true
       diff: false
@@ -255,7 +252,7 @@
       ansible.builtin.meta: flush_handlers
     - name: Start Ghost
       ansible.builtin.systemd_service:
-        name: "{{ service_name }}"
+        name: "ghost_121gigawatts-org"
         enabled: true
         state: started
         daemon_reload: true
@@ -277,7 +274,7 @@
         state: restarted
     - name: Restart ghost
       ansible.builtin.systemd_service:
-        name: "{{ service_name }}"
+        name: "ghost_121gigawatts-org"
         state: restarted
         daemon_reload: true
       when: ghost_start | default(true) | bool

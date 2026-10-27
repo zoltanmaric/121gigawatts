@@ -45,3 +45,5 @@ hosting/private/
 *.pem
 *.key
 crash.log
+
+.venv/

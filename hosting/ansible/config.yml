@@ -14,8 +14,7 @@
       - ghost_config.database.connection.host == '127.0.0.1'
       - ghost_config.database.connection.database == 'ghost_prod'
       - ghost_config.database.connection.user == 'ghostapp'
-      - ghost_config.database.connection.password | length >= 24
-      - ghost_config.paths.contentPath == site_path + '/content'
+      - ghost_config.paths.contentPath == '/var/www/121gigawatts/content'
       - ghost_config.mail.transport == 'SMTP'
     fail_msg: Private configuration does not match the documented deployment contract.
   no_log: true

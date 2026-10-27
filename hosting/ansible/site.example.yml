@@ -1,9 +1,6 @@
 ---
 # Copy outside the repository. Paths below refer to private files on your Mac.
 domain: blog.example.org
-site_path: /var/www/121gigawatts
-service_name: ghost_121gigawatts-org
-certificate_dir: /etc/ssl/121gigawatts
 site_url: http://localhost:2371
 # A complete config.production.json with MySQL credentials and working SMTP.
 # Its url MUST equal site_url; server MUST bind 127.0.0.1:2368.

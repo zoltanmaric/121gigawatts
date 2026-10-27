@@ -16,6 +16,4 @@ jobs:
         with:
           terraform_version: 1.5.7
       - uses: astral-sh/setup-uv@v6
-      - run: uv run --locked hosting/manage.py validate
-        env:
-          DEPLOY_PRIVATE: ${{ runner.temp }}/ghost-hosting
+      - run: make -C hosting setup test
