@@ -15,12 +15,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
-      - run: terraform -chdir=hosting/terraform fmt -check
-      - run: terraform -chdir=hosting/terraform init -backend=false -input=false -lockfile=readonly
-      - run: terraform -chdir=hosting/terraform validate
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - run: pip install -r hosting/ansible/requirements.txt
-      - run: ansible-galaxy collection install -r hosting/ansible/requirements.yml
-      - run: ansible-playbook -i hosting/ansible/inventory.example.yml hosting/ansible/site.yml --syntax-check
+      - uses: astral-sh/setup-uv@v6
+      - run: uv run --locked hosting/manage.py validate
+        env:
+          DEPLOY_PRIVATE: ${{ runner.temp }}/ghost-hosting

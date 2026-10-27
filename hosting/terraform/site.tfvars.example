@@ -1,8 +1,8 @@
-server_name  = "ghost-temporary"
-location     = "hel1"
-server_type  = "cpx02"
+server_name  = "ghost-site"
+location     = "fsn1"
+server_type  = "cx23"
 ssh_key_name = "your-existing-key"
 ip_names = {
-  ipv4 = "ghost-temporary-v4"
-  ipv6 = "ghost-temporary-v6"
+  ipv4 = "ghost-site-v4"
+  ipv6 = "ghost-site-v6"
 }

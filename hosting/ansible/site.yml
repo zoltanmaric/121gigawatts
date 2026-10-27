@@ -1,5 +1,5 @@
 ---
-- name: Configure the temporary Ghost server (never restore data implicitly)
+- name: Configure the Ghost server (never restore data implicitly)
   hosts: all
   become: true
   vars_files:
@@ -71,11 +71,10 @@
         value: '10'
         sysctl_file: /etc/sysctl.d/90-ghost.conf
         reload: true
-    - name: Tune MySQL for the small server
-      ansible.builtin.copy:
-        src: files/mysql-small.cnf
-        dest: /etc/mysql/mysql.conf.d/99-ghost-small.cnf
-        mode: '0644'
+    - name: Remove the obsolete low-memory MySQL overrides
+      ansible.builtin.file:
+        path: /etc/mysql/mysql.conf.d/99-ghost-small.cnf
+        state: absent
       notify: Restart mysql
     - name: Create package key directory
       ansible.builtin.file:
